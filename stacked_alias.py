@@ -85,22 +85,25 @@ class Alias_list(object):
 
     def _process_aliases(self):
 
-        logging.debug('Reading file %s' % self.alias_file)
+        if os.path.exists(self.alias_file):
+            f = open(self.alias_file, 'r')
+	    logging.debug('Reading file %s' % self.alias_file)
 
-        # More error checking here...
-        f = open(self.alias_file, 'r')
+            for line in f.readlines():
+                # Split the string into individual fields.
+                line.replace(' ', '')
+                (alias, dir) = line.strip().split(',')
+                self.list.append(Alias(alias.strip(), dir.strip()))
 
-        for line in f.readlines():
+                f.close()
 
-            # Split the string into individual fields.
-            line.replace(' ', '')
-            (alias, dir) = line.strip().split(',')
-            self.list.append(Alias(alias.strip(), dir.strip()))
+            # Sort the aliasList in place by name
+            self.list.sort(key=operator.attrgetter('name'))
 
-        f.close()
-
-        # Sort the aliasList in place by name
-        self.list.sort(key=operator.attrgetter('name'))
+            else:
+                # Create the file.
+                f = open(self.alias_file, 'w')
+                f.close()
 
     def find(self, stacked_alias_str):
 
@@ -183,127 +186,7 @@ class Alias_list(object):
 
         return
 
-
-class TestSequenceFunctions(unittest.TestCase):
-
-    def setUp(self):
-        self.seq = range(10)
-
-    def test_shuffle(self):
-
-        # Make sure the shuffled sequence does not lose any elements
-        random.shuffle(self.seq)
-        self.seq.sort()
-        self.assertEqual(self.seq, range(10))
-
-        # Should raise an exception for an immutable sequence
-        self.assertRaises(TypeError, random.shuffle, (1, 2, 3))
-
-    def test_choice(self):
-        element = random.choice(self.seq)
-        self.assertTrue(element in self.seq)
-
-
-    # def test_sample(self):
-    #    with self.assertRaises(ValueError):
-    #        random.sample(self.seq, 20)
-    #    for element in random.sample(self.seq, 5):
-    #        self.assertTrue(element in self.seq)
-
-class Exec(object):
-
-    # def __init__(self):
-        # print("Hello!")
-
-    def cmd(self, cmd, input):
-
-        print '%s' % cmd
-
-        output = open('outputx.txt', 'w+')
-        output.truncate()
-
-        error = open('errorx.txt', 'w+')
-        error.truncate()
-
-        # Write the input to the output file.
-
-        output.write(input)
-        output.seek(0)
-        p = subprocess.Popen(cmd, stdin=output, stdout=subprocess.PIPE,
-                             shell=True)
-        (stdout, stderr) = p.communicate()
-
-        output.close()
-        error.close()
-        return (stdout, stderr)
-
-    def cmd_list(self, cmd, input):
-
-        # Split the cmd string into individual commands using the pipe as a delimiter.
-
-        logging.debug('cmd: %s ' % cmd)
-
-        list_of_cmds = cmd.split('|')
-
-        output = open('output.txt', 'w+')
-        output.truncate()
-
-        error = open('error.txt', 'w+')
-        error.truncate()
-
-        # Write the input to the output file.
-
-        output.write(input)
-
-        for c in list_of_cmds:
-
-            logging.debug('command: %s' % c)
-
-            # print("%s\n" % out)
-
-            # Split the command into individual tokens using spaces.
-            # This is not good for certain commands.  Test using 2 spaces.
-
-            tokens = c.strip().split(' ')
-
-            # tokens = c.split("  ");
-
-            logging.debug('tokens:  %s' % tokens)
-
-            output.seek(0)
-
-            # text = output.read(300)
-            # print ("text: %s\n" % text)
-
-            p = subprocess.Popen(tokens, stdin=output,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
-
-            # comunicate() returns a tuple (stdout, stderr).
-
-            (out, err) = p.communicate()
-
-            # Remove the contents of the output text file.
-
-            output.truncate()
-
-            output.write(out)
-            error.write(err)
-
-            # out = (p.stdout.read(), p.stderr.read())
-
-            p.stdout.close()
-
-            # print("%s\n" % output)
-
-        output.close()
-        error.close()
-        return (out, error)
-
-
 def main():
-
-    # parser = OptionParser()
 
     parser = optparse.OptionParser()
     parser.add_option('-l', '--logging_level', help='Logging level')
@@ -349,7 +232,6 @@ def main():
     # Perform actions based on the command line options.
 
     # Bail out if no alias to process.
-
     if options.alias != None:
         directory = alias_list.find(options.alias)
         print '%s' % directory
