@@ -1,6 +1,27 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#=========================================================================
+#    Author: 		 T.Tomaino
+#    Creation Date:	 10/11/2012
+#
+#    This file is part of Stacked Alias.
+#
+#    Stacked Alias is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    Stacked Alias is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+#=========================================================================
+
+
 import exceptions
 import logging
 import operator
@@ -22,34 +43,9 @@ LOGGING_LEVELS = {
     }
 
 DEFAULT_LOGGING_LEVEL = logging.ERROR
+
 # Expand the tilde into the user's home directory path.
 ALIAS_FILE = os.path.expanduser('~/alias_list')
-
-
-class switch(object):
-
-    def __init__(self, value):
-        self.value = value
-        self.fall = False
-
-    def __iter__(self):
-        """Return the match method once, then stop"""
-
-        yield self.match
-        raise StopIteration
-
-    def match(self, *args):
-        """Indicate whether or not to enter a case suite"""
-
-        if self.fall or not args:
-            return True
-        elif self.value in args:
-
-            # changed for v1.5, see below
-            self.fall = True
-            return True
-        else:
-            return False
 
 
 class Alias(object):
@@ -145,7 +141,7 @@ class Alias_list(object):
         self.list.append(Alias(name, dir))
 
         # Write the list to file.
-        # More error checking here...
+        # Need more error checking here...
         open(self.alias_file, 'a').write('%-18s %s\n' % (name + ',', dir))
 
         #f.close()
@@ -222,8 +218,6 @@ def main():
 
     logging.debug("Alias option:  %s " % options.alias)
 
-    # Split the cmd string into individual commands using the pipe as a delimiter.
-    # list_of_aliases = options.alias.split(".")
     alias_list = Alias_list(ALIAS_FILE)
 
     if options.display_aliases == '1':
